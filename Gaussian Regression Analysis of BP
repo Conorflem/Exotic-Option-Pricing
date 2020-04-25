@@ -1,0 +1,73 @@
+#import modules needed
+import numpy as np
+#import pandas_datareader as web
+import matplotlib.pyplot as plt
+import datetime as dt
+import pandas as pd
+from matplotlib import style
+from matplotlib import rc
+#from sklearn.linear_model import LinearRegression
+#from sklearn.model_selection import train_test_split
+#from sklearn.metrics import mean_squared_error
+import GPy
+#from numpy.random import randn
+import time
+
+start_time = time.time()
+#style of plot
+style.use('default')
+#parse in sample data
+#This is for data that is less than 40 days to expiration. 
+#Change timedelta for required expiration dates
+df = pd.read_csv('BP_2019.csv',index_col = 'underlying',parse_dates = ['expiration','quotedate'])
+df_40 = df[df.quotedate > (df.expiration - pd.to_timedelta('40 days'))]
+#parse out of sample data
+df_pred = pd.read_csv('BP_20190801_to_20190830.csv',index_col = 'underlying',parse_dates = ['expiration','quotedate'])
+df_pred40 = df_pred[df_pred.quotedate > (df_pred.expiration - pd.to_timedelta('40 days'))]
+#define moneyness in sample
+mid_40 =(df_40['ask']+df_40['bid'])/2
+m_40 = df_40['underlying_last']/df_40['strike']
+#define moneyness out of sample
+mid_pred40 =(df_pred40['ask']+df_pred40['bid'])/2
+m_pred40 = df_pred40['underlying_last']/df_pred40['strike']
+#define mid/strike in sample
+ms_40 = mid_40/df_40['strike']
+#define mid/strike out of sample
+ms_pred40 = mid_pred40/df_pred40['strike']
+
+#x and y in sample
+#only taking call data
+#only taking data where moneyness is out of the money i.e less than 0.97
+x_40otm = m_40.loc[(m_40<0.97)& (df_40.type == 'call')]
+y_40otm = ms_40.loc[(m_40<0.97) & (df_40.type == 'call')]
+
+gp_y40otm = (y_40otm).values.reshape(x_40otm.shape[0], 1)
+gp_x40otm = (np.array(x_40otm)).reshape(x_40otm.shape[0], 1)
+
+#x and y out of sample
+x_pred40otm = m_pred40.loc[(m_pred40<0.97)& (df_pred40.type == 'call')]
+y_pred40otm = ms_pred40.loc[(m_pred40<0.97) & (df_pred40.type == 'call')]
+
+gp_ypred40otm = (y_pred40otm).values.reshape(x_pred40otm.shape[0], 1)
+gp_xpred40otm = (np.array(x_pred40otm)).reshape(x_pred40otm.shape[0], 1)
+#define kernel
+kern = GPy.kern.RBF(input_dim = 1)
+model_40otm = GPy.models.GPRegression(gp_x40otm, gp_y40otm, kern)
+model_40otm.optimize()
+model_40otm.plot()
+plt.xlabel('Moneyness', fontsize = 15)
+plt.ylabel('Mid/Strike', fontsize = 15)
+#define root mean squared error
+def RMSE(model, grid, ygrid):
+    ypred = model.predict(grid)
+    Sqerr = np.power((ypred - ygrid),2)
+    MSE = np.sum(Sqerr)
+    rmse = np.sqrt(MSE/ygrid.size)
+    #print ('RMSE = ' +str(rmse))
+    #print ('Log likelihood is ' + str(model.log_likelihood()))
+    return rmse
+
+print('RMSE in sample for Tau < 40, Moneyness < 0.97 is:' +str(RMSE(model_40otm,gp_x40otm, gp_y40otm)))
+print('RMSE out of sample for Tau < 40, Moneyness < 0.97 is:' +str(RMSE(model_40otm,gp_xpred40otm, gp_ypred40otm)))
+
+print('Time taken for execution to run = ' +str((time.time() - start_time)/60) +' minutes.')
