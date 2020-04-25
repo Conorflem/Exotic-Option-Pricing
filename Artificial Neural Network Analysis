@@ -1,0 +1,704 @@
+#/usr/bin/python -env
+
+#----------
+# build the dataset
+#----------
+from pybrain.datasets import SupervisedDataSet
+import math
+from numpy import *
+from past.builtins import xrange
+import pandas as pd
+import numpy as np
+from sklearn import preprocessing
+import time
+start_time = time.time()
+min_max_scaler = preprocessing.MinMaxScaler()
+
+strIn = input("Enter your input: ");
+print( "Received input is : ", strIn)
+dt = pd.read_csv(strIn, parse_dates = ['expiration','quotedate'])
+dt[['expiration','quotedate']] = dt[['expiration','quotedate']].astype(np.int64)
+#defining means and std for normalisation
+expmean = dt['expiration'].mean()
+expstd = dt['expiration'].std()
+quotemean = dt['quotedate'].mean()
+quotestd = dt['quotedate'].std()
+moneymean = dt['moneyness'].mean()
+moneystd = dt['moneyness'].std()
+midstrikemean = dt['mid/strike'].mean()
+midstrikestd = dt['mid/strike'].std()
+
+#normalise
+normalized_dtexp=(dt['expiration']-dt['expiration'].mean())/dt['expiration'].std()
+normalized_dtquote=(dt['quotedate']-dt['quotedate'].mean())/dt['quotedate'].std()
+normalized_dtmoney=(dt['moneyness']-dt['moneyness'].mean())/dt['moneyness'].std()
+normalized_dtmidstrike=(dt['mid/strike']-dt['mid/strike'].mean())/dt['mid/strike'].std()
+dt['expiration'] = normalized_dtexp
+dt['quotedate'] = normalized_dtquote
+dt['moneyness'] = normalized_dtmoney
+dt['mid/strike'] = normalized_dtmidstrike
+# =============================================================================
+# 
+# 
+# 
+# 
+# 
+# 
+# =============================================================================
+df40otm = pd.read_csv('ANN_2019_40OTM.csv', parse_dates = ['expiration','quotedate'])
+df40atm = pd.read_csv('ANN_2019_40ATM.csv', parse_dates = ['expiration','quotedate'])
+df40itm = pd.read_csv('ANN_2019_40ITM.csv', parse_dates = ['expiration','quotedate'])
+df4070otm = pd.read_csv('ANN_2019_40_70OTM.csv', parse_dates = ['expiration','quotedate'])
+df4070atm = pd.read_csv('ANN_2019_40_70ATM.csv', parse_dates = ['expiration','quotedate'])
+df4070itm = pd.read_csv('ANN_2019_40_70ITM.csv', parse_dates = ['expiration','quotedate'])
+df70otm = pd.read_csv('ANN_2019_70OTM.csv', parse_dates = ['expiration','quotedate'])
+df70atm = pd.read_csv('ANN_2019_70ATM.csv', parse_dates = ['expiration','quotedate'])
+df70itm = pd.read_csv('ANN_2019_70ITM.csv', parse_dates = ['expiration','quotedate'])
+# =============================================================================
+# #
+# #
+# =============================================================================
+df40otm[['expiration','quotedate']] = df40otm[['expiration','quotedate']].astype(np.int64)
+df40atm[['expiration','quotedate']] = df40atm[['expiration','quotedate']].astype(np.int64)
+df40itm[['expiration','quotedate']] = df40itm[['expiration','quotedate']].astype(np.int64)
+df4070otm[['expiration','quotedate']] = df4070otm[['expiration','quotedate']].astype(np.int64)
+df4070atm[['expiration','quotedate']] = df4070atm[['expiration','quotedate']].astype(np.int64)
+df4070itm[['expiration','quotedate']] = df4070itm[['expiration','quotedate']].astype(np.int64)
+df70otm[['expiration','quotedate']] = df70otm[['expiration','quotedate']].astype(np.int64)
+df70atm[['expiration','quotedate']] = df70atm[['expiration','quotedate']].astype(np.int64)
+df70itm[['expiration','quotedate']] = df70itm[['expiration','quotedate']].astype(np.int64)
+# =============================================================================
+# #
+# #
+# =============================================================================
+midstrikemeanf40otm = df40otm['mid/strike'].mean()
+midstrikestdf40otm = df40otm['mid/strike'].std()
+#
+midstrikemeanf40itm = df40itm['mid/strike'].mean()
+midstrikestdf40itm = df40itm['mid/strike'].std()
+#
+midstrikemeanf40atm = df40atm['mid/strike'].mean()
+midstrikestdf40atm = df40atm['mid/strike'].std()
+#
+midstrikemeanf4070otm = df4070otm['mid/strike'].mean()
+midstrikestdf4070otm = df4070otm['mid/strike'].std()
+#
+midstrikemeanf4070atm = df4070atm['mid/strike'].mean()
+midstrikestdf4070atm = df4070atm['mid/strike'].std()
+#
+midstrikemeanf4070itm = df4070itm['mid/strike'].mean()
+midstrikestdf4070itm = df4070itm['mid/strike'].std()
+#
+midstrikemeanf70otm = df70otm['mid/strike'].mean()
+midstrikestdf70otm = df70otm['mid/strike'].std()
+#
+midstrikemeanf70atm = df70atm['mid/strike'].mean()
+midstrikestdf70atm = df70atm['mid/strike'].std()
+#
+midstrikemeanf70itm = df70itm['mid/strike'].mean()
+midstrikestdf70itm = df70itm['mid/strike'].std()
+# =============================================================================
+# #
+# #
+# =============================================================================
+normalized_df40otmexp=(df40otm['expiration']-df40otm['expiration'].mean())/df40otm['expiration'].std()
+normalized_df40otmquote=(df40otm['quotedate']-df40otm['quotedate'].mean())/df40otm['quotedate'].std()
+normalized_df40otmmoney=(df40otm['moneyness']-df40otm['moneyness'].mean())/df40otm['moneyness'].std()
+normalized_df40otmmidstrike=(df40otm['mid/strike']-df40otm['mid/strike'].mean())/df40otm['mid/strike'].std()
+#
+normalized_df40atmexp=(df40atm['expiration']-df40atm['expiration'].mean())/df40atm['expiration'].std()
+normalized_df40atmquote=(df40atm['quotedate']-df40atm['quotedate'].mean())/df40atm['quotedate'].std()
+normalized_df40atmmoney=(df40atm['moneyness']-df40atm['moneyness'].mean())/df40atm['moneyness'].std()
+normalized_df40atmmidstrike=(df40atm['mid/strike']-df40atm['mid/strike'].mean())/df40atm['mid/strike'].std()
+#
+normalized_df40itmexp=(df40itm['expiration']-df40itm['expiration'].mean())/df40itm['expiration'].std()
+normalized_df40itmquote=(df40itm['quotedate']-df40itm['quotedate'].mean())/df40itm['quotedate'].std()
+normalized_df40itmmoney=(df40itm['moneyness']-df40itm['moneyness'].mean())/df40itm['moneyness'].std()
+normalized_df40itmmidstrike=(df40itm['mid/strike']-df40itm['mid/strike'].mean())/df40itm['mid/strike'].std()
+#
+normalized_df4070otmexp=(df4070otm['expiration']-df4070otm['expiration'].mean())/df4070otm['expiration'].std()
+normalized_df4070otmquote=(df4070otm['quotedate']-df4070otm['quotedate'].mean())/df4070otm['quotedate'].std()
+normalized_df4070otmmoney=(df4070otm['moneyness']-df4070otm['moneyness'].mean())/df4070otm['moneyness'].std()
+normalized_df4070otmmidstrike=(df4070otm['mid/strike']-df4070otm['mid/strike'].mean())/df4070otm['mid/strike'].std()
+#
+normalized_df4070atmexp=(df4070atm['expiration']-df4070atm['expiration'].mean())/df4070atm['expiration'].std()
+normalized_df4070atmquote=(df4070atm['quotedate']-df4070atm['quotedate'].mean())/df4070atm['quotedate'].std()
+normalized_df4070atmmoney=(df4070atm['moneyness']-df4070atm['moneyness'].mean())/df4070atm['moneyness'].std()
+normalized_df4070atmmidstrike=(df4070atm['mid/strike']-df4070atm['mid/strike'].mean())/df4070atm['mid/strike'].std()
+#
+normalized_df4070itmexp=(df4070itm['expiration']-df4070itm['expiration'].mean())/df4070itm['expiration'].std()
+normalized_df4070itmquote=(df4070itm['quotedate']-df4070itm['quotedate'].mean())/df4070itm['quotedate'].std()
+normalized_df4070itmmoney=(df4070itm['moneyness']-df4070itm['moneyness'].mean())/df4070itm['moneyness'].std()
+normalized_df4070itmmidstrike=(df4070itm['mid/strike']-df4070itm['mid/strike'].mean())/df4070itm['mid/strike'].std()
+#
+normalized_df70otmexp=(df70otm['expiration']-df70otm['expiration'].mean())/df70otm['expiration'].std()
+normalized_df70otmquote=(df70otm['quotedate']-df70otm['quotedate'].mean())/df70otm['quotedate'].std()
+normalized_df70otmmoney=(df70otm['moneyness']-df70otm['moneyness'].mean())/df70otm['moneyness'].std()
+normalized_df70otmmidstrike=(df70otm['mid/strike']-df70otm['mid/strike'].mean())/df70otm['mid/strike'].std()
+#
+normalized_df70atmexp=(df70atm['expiration']-df70atm['expiration'].mean())/df70atm['expiration'].std()
+normalized_df70atmquote=(df70atm['quotedate']-df70atm['quotedate'].mean())/df70atm['quotedate'].std()
+normalized_df70atmmoney=(df70atm['moneyness']-df70atm['moneyness'].mean())/df70atm['moneyness'].std()
+normalized_df70atmmidstrike=(df70atm['mid/strike']-df70atm['mid/strike'].mean())/df70atm['mid/strike'].std()
+#
+normalized_df70itmexp=(df70itm['expiration']-df70itm['expiration'].mean())/df70itm['expiration'].std()
+normalized_df70itmquote=(df70itm['quotedate']-df70itm['quotedate'].mean())/df70itm['quotedate'].std()
+normalized_df70itmmoney=(df70itm['moneyness']-df70itm['moneyness'].mean())/df70itm['moneyness'].std()
+normalized_df70itmmidstrike=(df70itm['mid/strike']-df70itm['mid/strike'].mean())/df70itm['mid/strike'].std()
+# =============================================================================
+# 
+# 
+# =============================================================================
+df40otm['expiration'] = normalized_df40otmexp
+df40otm['quotedate'] = normalized_df40otmquote
+df40otm['moneyness'] = normalized_df40otmmoney
+df40otm['mid/strike'] = normalized_df40otmmidstrike
+#
+df40atm['expiration'] = normalized_df40atmexp
+df40atm['quotedate'] = normalized_df40atmquote
+df40atm['moneyness'] = normalized_df40atmmoney
+df40atm['mid/strike'] = normalized_df40atmmidstrike
+#
+df40itm['expiration'] = normalized_df40itmexp
+df40itm['quotedate'] = normalized_df40itmquote
+df40itm['moneyness'] = normalized_df40itmmoney
+df40itm['mid/strike'] = normalized_df40itmmidstrike
+#
+df4070otm['expiration'] = normalized_df4070otmexp
+df4070otm['quotedate'] = normalized_df4070otmquote
+df4070otm['moneyness'] = normalized_df4070otmmoney
+df4070otm['mid/strike'] = normalized_df4070otmmidstrike
+#
+df4070atm['expiration'] = normalized_df4070atmexp
+df4070atm['quotedate'] = normalized_df4070atmquote
+df4070atm['moneyness'] = normalized_df4070atmmoney
+df4070atm['mid/strike'] = normalized_df4070atmmidstrike
+#
+df4070itm['expiration'] = normalized_df4070itmexp
+df4070itm['quotedate'] = normalized_df4070itmquote
+df4070itm['moneyness'] = normalized_df4070itmmoney
+df4070itm['mid/strike'] = normalized_df4070itmmidstrike
+#
+df70otm['expiration'] = normalized_df70otmexp
+df70otm['quotedate'] = normalized_df70otmquote
+df70otm['moneyness'] = normalized_df70otmmoney
+df70otm['mid/strike'] = normalized_df70otmmidstrike
+#
+df70atm['expiration'] = normalized_df70atmexp
+df70atm['quotedate'] = normalized_df70atmquote
+df70atm['moneyness'] = normalized_df70atmmoney
+df70atm['mid/strike'] = normalized_df70atmmidstrike
+#
+df70itm['expiration'] = normalized_df70itmexp
+df70itm['quotedate'] = normalized_df70itmquote
+df70itm['moneyness'] = normalized_df70itmmoney
+df70itm['mid/strike'] = normalized_df70itmmidstrike
+
+# =============================================================================
+# 
+# 
+# 
+# 
+# 
+# =============================================================================
+dt2 = dt.values
+dt2 = dt2.astype('float32')
+train_size = int(len(dt))
+dat = dt2[0:train_size,:]
+# =============================================================================
+# 
+# 
+# =============================================================================
+df40otm2 = df40otm.values
+df40otm2 = df40otm2.astype('float32')
+train_size = int(len(df40otm))
+daf40otm = df40otm2[0:train_size,:]
+#
+df40atm2 = df40atm.values
+df40atm2 = df40atm2.astype('float32')
+train_size = int(len(df40atm))
+daf40atm = df40atm2[0:train_size,:]
+#
+df40itm2 = df40itm.values
+df40itm2 = df40itm2.astype('float32')
+train_size = int(len(df40itm))
+daf40itm = df40itm2[0:train_size,:]
+#
+df4070otm2 = df4070otm.values
+df4070otm2 = df4070otm2.astype('float32')
+train_size = int(len(df4070otm))
+daf4070otm = df4070otm2[0:train_size,:]
+#
+df4070atm2 = df4070atm.values
+df4070atm2 = df4070atm2.astype('float32')
+train_size = int(len(df4070atm))
+daf4070atm = df4070atm2[0:train_size,:]
+#
+df4070itm2 = df4070itm.values
+df4070itm2 = df4070itm2.astype('float32')
+train_size = int(len(df4070itm))
+daf4070itm = df4070itm2[0:train_size,:]
+#
+df70otm2 = df70otm.values
+df70otm2 = df70otm2.astype('float32')
+train_size = int(len(df70otm))
+daf70otm = df70otm2[0:train_size,:]
+#
+df70atm2 = df70atm.values
+df70atm2 = df70atm2.astype('float32')
+train_size = int(len(df70atm))
+daf70atm = df70atm2[0:train_size,:]
+#
+df70itm2 = df70itm.values
+df70itm2 = df70itm2.astype('float32')
+train_size = int(len(df70itm))
+daf70itm = df70itm2[0:train_size,:]
+# =============================================================================
+# 
+# 
+# 
+# 
+# 
+# 
+# =============================================================================
+#maxx0 = float(max(dat[:,0]))
+maxx1 = float(max(dat[:,1]))
+maxx2 = float(max(dat[:,2]))
+#maxx3 = float(max(dat[:,3]))
+#maxx4 = float(max(dat[:,4]))
+#maxx5 = float(max(dat[:,5]))
+#maxx6 = float(max(dat[:,6]))
+maxx7 = float(max(dat[:,7]))
+maxy = float(max(dat[:,8]))
+Yapprox = zeros(dat[:,0].shape[0])
+# =============================================================================
+# 
+# 
+# 
+# 
+# =============================================================================
+#maxxf0 = float(max(daf[:,0]))
+maxxf40otm1 = float(max(daf40otm[:,1]))
+maxxf40otm2 = float(max(daf40otm[:,2]))
+#maxxf3 = float(max(daf[:,3]))
+#maxxf4 = float(max(daf[:,4]))
+#maxxf5 = float(max(daf[:,5]))
+#maxxf6 = float(max(daf[:,6]))
+maxxf40otm7 = float(max(daf40otm[:,7]))
+maxf40otmy = float(max(daf40otm[:,8]))
+Yapproxf40otm = zeros(daf40otm[:,0].shape[0])
+#
+#maxxf40atm0 = float(max(daf40atm[:,0]))
+maxxf40atm1 = float(max(daf40atm[:,1]))
+maxxf40atm2 = float(max(daf40atm[:,2]))
+#maxxf40atm3 = float(max(daf40atm[:,3]))
+#maxxf40atm4 = float(max(daf40atm[:,4]))
+#maxxf40atm5 = float(max(daf40atm[:,5]))
+#maxxf40atm6 = float(max(daf40atm[:,6]))
+maxxf40atm7 = float(max(daf40atm[:,7]))
+maxf40atmy = float(max(daf40atm[:,8]))
+Yapproxf40atm = zeros(daf40atm[:,0].shape[0])
+#
+#maxxf40itm0 = float(max(daf40itm[:,0]))
+maxxf40itm1 = float(max(daf40itm[:,1]))
+maxxf40itm2 = float(max(daf40itm[:,2]))
+#maxxf40itm3 = float(max(daf40itm[:,3]))
+#maxxf4 = float(max(daf[:,4]))
+#maxxf5 = float(max(daf[:,5]))
+#maxxf6 = float(max(daf[:,6]))
+maxxf40itm7 = float(max(daf40itm[:,7]))
+maxf40itmy = float(max(daf40itm[:,8]))
+Yapproxf40itm = zeros(daf40itm[:,0].shape[0])
+#
+#maxxf4070otm0 = float(max(daf4070otm[:,0]))
+maxxf4070otm1 = float(max(daf4070otm[:,1]))
+maxxf4070otm2 = float(max(daf4070otm[:,2]))
+#maxxf4070otm3 = float(max(daf4070otm[:,3]))
+#maxxf4070otm4 = float(max(daf4070otm[:,4]))
+#maxxf4070otm5 = float(max(daf4070otm[:,5]))
+#maxxf4070otm6 = float(max(daf4070otm[:,6]))
+maxxf4070otm7 = float(max(daf4070otm[:,7]))
+maxf4070otmy = float(max(daf4070otm[:,8]))
+Yapproxf4070otm = zeros(daf4070otm[:,0].shape[0])
+#
+#maxxf4070atm0 = float(max(daf4070atm[:,0]))
+maxxf4070atm1 = float(max(daf4070atm[:,1]))
+maxxf4070atm2 = float(max(daf4070atm[:,2]))
+#maxxf4070atm3 = float(max(daf4070atm[:,3]))
+#maxxf4070atm4 = float(max(daf4070atm[:,4]))
+#maxxf4070atm5 = float(max(daf4070atm[:,5]))
+#maxxf4070atm6 = float(max(daf4070atm[:,6]))
+maxxf4070atm7 = float(max(daf4070atm[:,7]))
+maxf4070atmy = float(max(daf4070atm[:,8]))
+Yapproxf4070atm = zeros(daf4070atm[:,0].shape[0])
+#
+#maxxf4070itm0 = float(max(daf4070itm[:,0]))
+maxxf4070itm1 = float(max(daf4070itm[:,1]))
+maxxf4070itm2 = float(max(daf4070itm[:,2]))
+#maxxf4070itm3 = float(max(daf4070itm[:,3]))
+#maxxf4070itm4 = float(max(daf4070itm[:,4]))
+#maxxf4070itm5 = float(max(daf4070itm[:,5]))
+#maxxf4070itm6 = float(max(daf4070itm[:,6]))
+maxxf4070itm7 = float(max(daf4070itm[:,7]))
+maxf4070itmy = float(max(daf4070itm[:,8]))
+Yapproxf4070itm = zeros(daf4070itm[:,0].shape[0])
+#
+#maxxf70otm0 = float(max(daf70otm[:,0]))
+maxxf70otm1 = float(max(daf70otm[:,1]))
+maxxf70otm2 = float(max(daf70otm[:,2]))
+#maxxf70otm3 = float(max(daf70otm[:,3]))
+#maxxf70otm4 = float(max(daf70otm[:,4]))
+#maxxf70otm5 = float(max(daf70otm[:,5]))
+#maxxf70otm6 = float(max(daf70otm[:,6]))
+maxxf70otm7 = float(max(daf70otm[:,7]))
+maxf70otmy = float(max(daf70otm[:,8]))
+Yapproxf70otm = zeros(daf70otm[:,0].shape[0])
+#
+#maxxf70atm0 = float(max(daf70atm[:,0]))
+maxxf70atm1 = float(max(daf70atm[:,1]))
+maxxf70atm2 = float(max(daf70atm[:,2]))
+#maxxf70atm3 = float(max(daf70atm[:,3]))
+#maxxf70atm4 = float(max(daf70atm[:,4]))
+#maxxf70atm5 = float(max(daf70atm[:,5]))
+#maxxf70atm6 = float(max(daf70atm[:,6]))
+maxxf70atm7 = float(max(daf70atm[:,7]))
+maxf70atmy = float(max(daf70atm[:,8]))
+Yapproxf70atm = zeros(daf70atm[:,0].shape[0])
+#
+#maxxf70itm0 = float(max(daf70itm[:,0]))
+maxxf70itm1 = float(max(daf70itm[:,1]))
+maxxf70itm2 = float(max(daf70itm[:,2]))
+#maxxf70itm3 = float(max(daf70itm[:,3]))
+#maxxf70itm4 = float(max(daf70itm[:,4]))
+#maxxf70itm5 = float(max(daf70itm[:,5]))
+#maxxf70itm6 = float(max(daf70itm[:,6]))
+maxxf70itm7 = float(max(daf70itm[:,7]))
+maxf70itmy = float(max(daf70itm[:,8]))
+Yapproxf70itm = zeros(daf70itm[:,0].shape[0])
+
+# =============================================================================
+# 
+# 
+# 
+# 
+# 
+# 
+# =============================================================================
+ds = SupervisedDataSet( 3, 1 )
+for r in xrange(dat[:,0].shape[0]):
+    ds.appendLinked( ((dat[r,1]/maxx1),(dat[r,2]/maxx2),(dat[r,7]/maxx7) ), (dat[r,8]/maxy)  )
+    
+#----------
+# build the network
+#----------
+from pybrain.structure import TanhLayer, LinearLayer
+from pybrain.tools.shortcuts import buildNetwork
+
+net = buildNetwork(3,
+                   30,
+                   2,# number of hidden units
+                   1,
+                   bias = True,
+                   hiddenclass = TanhLayer,
+                   outclass = LinearLayer
+                   )
+#----------
+# train
+#----------
+from pybrain.supervised.trainers import BackpropTrainer
+trainer = BackpropTrainer(net, ds, verbose = True)
+trainer.trainUntilConvergence(maxEpochs = 5)
+
+#----------
+# evaluate
+#----------
+# neural net approximation
+for r in xrange(dat[:,0].shape[0]):
+    Yapprox[r] = net.activate([(dat[r,1]/maxx1),(dat[r,2]/maxx2),(dat[r,7]/maxx7)])
+    Yapprox[r] = maxy * Yapprox[r] 
+# =============================================================================
+# 
+# 
+# 
+# 
+# =============================================================================
+for r in xrange(daf40otm[:,0].shape[0]):
+    Yapproxf40otm[r] = net.activate([(daf40otm[r,1]/maxxf40otm1),(daf40otm[r,2]/maxxf40otm2),(daf40otm[r,7]/maxxf40otm7)])
+    Yapproxf40otm[r] = maxf40otmy * Yapproxf40otm[r]
+#
+for r in xrange(daf40atm[:,0].shape[0]):
+    Yapproxf40atm[r] = net.activate([(daf40atm[r,1]/maxxf40atm1),(daf40atm[r,2]/maxxf40atm2),(daf40atm[r,7]/maxxf40atm7)])
+    Yapproxf40atm[r] = maxf40atmy * Yapproxf40atm[r]
+#
+for r in xrange(daf40itm[:,0].shape[0]):
+    Yapproxf40itm[r] = net.activate([(daf40itm[r,1]/maxxf40itm1),(daf40itm[r,2]/maxxf40itm2),(daf40itm[r,7]/maxxf40itm7)])
+    Yapproxf40itm[r] = maxf40itmy * Yapproxf40itm[r]
+#
+for r in xrange(daf4070otm[:,0].shape[0]):
+    Yapproxf4070otm[r] = net.activate([(daf4070otm[r,1]/maxxf4070otm1),(daf4070otm[r,2]/maxxf4070otm2),(daf4070otm[r,7]/maxxf4070otm7)])
+    Yapproxf4070otm[r] = maxf4070otmy * Yapproxf4070otm[r]
+#
+for r in xrange(daf4070atm[:,0].shape[0]):
+    Yapproxf4070atm[r] = net.activate([(daf4070atm[r,1]/maxxf4070atm1),(daf4070atm[r,2]/maxxf4070atm2),(daf4070atm[r,7]/maxxf4070atm7)])
+    Yapproxf4070atm[r] = maxf4070atmy * Yapproxf4070atm[r]
+#
+for r in xrange(daf4070itm[:,0].shape[0]):
+    Yapproxf4070itm[r] = net.activate([(daf4070itm[r,1]/maxxf4070itm1),(daf4070itm[r,2]/maxxf4070itm2),(daf4070itm[r,7]/maxxf4070itm7)])
+    Yapproxf4070itm[r] = maxf4070itmy * Yapproxf4070itm[r]
+#
+for r in xrange(daf70otm[:,0].shape[0]):
+    Yapproxf70otm[r] = net.activate([(daf70otm[r,1]/maxxf70otm1),(daf70otm[r,2]/maxxf70otm2),(daf70otm[r,7]/maxxf70otm7)])
+    Yapproxf70otm[r] = maxf70otmy * Yapproxf70otm[r]
+#
+for r in xrange(daf70atm[:,0].shape[0]):
+    Yapproxf70atm[r] = net.activate([(daf70atm[r,1]/maxxf70atm1),(daf70atm[r,2]/maxxf70atm2),(daf70atm[r,7]/maxxf70atm7)])
+    Yapproxf70atm[r] = maxf70atmy * Yapproxf70atm[r]
+#
+for r in xrange(daf70itm[:,0].shape[0]):
+    Yapproxf70itm[r] = net.activate([(daf70itm[r,1]/maxxf70itm1),(daf70itm[r,2]/maxxf70itm2),(daf70itm[r,7]/maxxf70itm7)])
+    Yapproxf70itm[r] = maxf70itmy * Yapproxf70itm[r]
+#
+# =============================================================================
+# 
+# 
+# 
+# 
+# 
+# 
+# =============================================================================
+# Write into file
+f = open('annResults' + str(strIn), 'w')
+for r in xrange(len(dat[:,0])):
+    f.write(str(dat[r,1]) + " " + str(dat[r,2]) + " " + str(dat[r,7]/maxx7) + " " + str(dat[:,8]*midstrikestd+midstrikemean) + " " + str(Yapprox[r]*midstrikestd+midstrikemean)+ "\n")
+f.close()  
+# =============================================================================
+# 
+# 
+# 
+# 
+# =============================================================================
+f = open('annResults' + 'ANN_2019_40OTM.csv', 'w')
+for r in xrange(len(daf40otm[:,0])):
+    f.write(str(daf40otm[r,1]) + " " + str(daf40otm[r,2]) + " " + str(daf40otm[r,7]/maxxf40otm7) + " " + str(daf40otm[:,8]*midstrikestdf40otm+midstrikemeanf40otm) + " " + str(Yapproxf40otm[r]*midstrikestd+midstrikemean) + "\n")
+f.close()
+#
+f = open('annResults' + 'ANN_2019_40ATM.csv', 'w')
+for r in xrange(len(daf40atm[:,0])):
+    f.write(str(daf40atm[r,1]) + " " + str(daf40atm[r,2]) + " " + str(daf40atm[r,7]/maxxf40atm7) + " " + str(daf40atm[:,8]*midstrikestdf40atm+midstrikemeanf40atm) + " " + str(Yapproxf40atm[r]*midstrikestd+midstrikemean) + "\n")
+f.close()
+#
+f = open('annResults' + 'ANN_2019_40ITM.csv', 'w')
+for r in xrange(len(daf40itm[:,0])):
+    f.write(str(daf40itm[r,1]) + " " + str(daf40itm[r,2]) + " " + str(daf40itm[r,7]/maxxf40itm7) + " " + str(daf40itm[:,8]*midstrikestdf40itm+midstrikemeanf40itm) + " " + str(Yapproxf40itm[r]*midstrikestd+midstrikemean) + "\n")
+f.close()
+#
+f = open('annResults' + 'ANN_2019_40_70OTM.csv', 'w')
+for r in xrange(len(daf4070otm[:,0])):
+    f.write(str(daf4070otm[r,1]) + " " + str(daf4070otm[r,2]) + " " + str(daf4070otm[r,7]/maxxf4070otm7) + " " + str(daf4070otm[:,8]*midstrikestdf4070otm+midstrikemeanf4070otm) + " " + str(Yapproxf4070otm[r]*midstrikestd+midstrikemean) + "\n")
+f.close()
+#
+f = open('annResults' + 'ANN_2019_40_70ATM.csv', 'w')
+for r in xrange(len(daf4070atm[:,0])):
+    f.write(str(daf4070atm[r,1]) + " " + str(daf4070atm[r,2]) + " " + str(daf4070atm[r,7]/maxxf4070atm7) + " " + str(daf4070atm[:,8]*midstrikestdf4070atm+midstrikemeanf4070atm) + " " + str(Yapproxf4070atm[r]*midstrikestd+midstrikemean) + "\n")
+f.close()
+#
+f = open('annResults' + 'ANN_2019_40_70ITM.csv', 'w')
+for r in xrange(len(daf4070itm[:,0])):
+    f.write(str(daf4070itm[r,1]) + " " + str(daf4070itm[r,2]) + " " + str(daf4070itm[r,7]/maxxf4070itm7) + " " + str(daf4070itm[:,8]*midstrikestdf4070itm+midstrikemeanf4070itm) + " " + str(Yapproxf4070itm[r]*midstrikestd+midstrikemean) + "\n")
+f.close()
+#
+f = open('annResults' + 'ANN_2019_70OTM.csv', 'w')
+for r in xrange(len(daf70otm[:,0])):
+    f.write(str(daf70otm[r,1]) + " " + str(daf70otm[r,2]) + " " + str(daf70otm[r,7]/maxxf70otm7) + " " + str(daf70otm[:,8]*midstrikestdf70otm+midstrikemeanf70otm) + " " + str(Yapproxf70otm[r]*midstrikestd+midstrikemean) + "\n")
+f.close()
+#
+f = open('annResults' + 'ANN_2019_70ATM.csv', 'w')
+for r in xrange(len(daf70atm[:,0])):
+    f.write(str(daf70atm[r,1]) + " " + str(daf70atm[r,2]) + " " + str(daf70atm[r,7]/maxxf70atm7) + " " + str(daf70atm[:,8]*midstrikestdf70atm+midstrikemeanf70atm) + " " + str(Yapproxf70atm[r]*midstrikestd+midstrikemean) + "\n")
+f.close()
+#
+f = open('annResults' + 'ANN_2019_70ITM.csv', 'w')
+for r in xrange(len(daf70itm[:,0])):
+    f.write(str(daf70itm[r,1]) + " " + str(daf70itm[r,2]) + " " + str(daf70itm[r,7]/maxxf70itm7) + " " + str(daf70itm[:,8]*midstrikestdf70itm+midstrikemeanf70itm) + " " + str(Yapproxf70itm[r]*midstrikestd+midstrikemean) + "\n")
+f.close()
+#
+
+# =============================================================================
+#   
+# 
+# 
+# 
+# 
+# 
+# =============================================================================
+# Calculate Pearson Coeff.
+# =============================================================================
+# sumNum = float(0)
+# sumDom1 = float(0)
+# sumDom2 = float(0)
+# sumCol1 = sum(dat[:,8])
+# sumCol2 = sum(Yapprox)
+# NR = float(len(dat[:,0]))
+# for r in xrange(len(dat[:,0])):
+#     sumNum+=(dat[r,8]-sumCol1/NR)*(Yapprox[r]-sumCol2/NR)
+#     sumDom1+=(dat[r,8]-sumCol1/NR)*(dat[r,8]-sumCol1/NR)
+#     sumDom2+=(Yapprox[r]-sumCol2/NR)*(Yapprox[r]-sumCol2/NR)
+# print( "Pearson coeff = ", sumNum/(sumDom1**0.5*sumDom2**0.5))  
+#     
+# # Calculate pdf of error
+# errD = (Yapprox-dat[:,8])/Yapprox
+# minD = min(errD)
+# maxD = max(errD)
+# print('minD is ' +str(minD),'maxD is ' +str(maxD)) 
+# nBin = 20
+# binS = ( maxD - minD ) / nBin
+# err = zeros(nBin)
+# for r in xrange(len(dat[:,0])):
+#     err[int(round((errD[r]-minD)/binS)-1)] += 1
+# # Write pdf of error into file
+# f = open('errPdf' + str(strIn), 'w')
+# for r in xrange(nBin):
+#     f.write(str(minD+binS/2.+(r-1)*binS) + " " + str(err[r]) + "\n")
+# f.close()       
+# =============================================================================
+#convert normalised back into real values
+newdat = (dat[:,8]*midstrikestd+midstrikemean)
+#
+newdaf40otm = (daf40otm[:,8]*midstrikestdf40otm+midstrikemeanf40otm)
+newdaf40atm = (daf40atm[:,8]*midstrikestdf40atm+midstrikemeanf40atm)
+newdaf40itm = (daf40itm[:,8]*midstrikestdf40itm+midstrikemeanf40itm)
+newdaf4070otm = (daf4070otm[:,8]*midstrikestdf4070otm+midstrikemeanf4070otm)
+newdaf4070atm = (daf4070atm[:,8]*midstrikestdf4070atm+midstrikemeanf4070atm)
+newdaf4070itm = (daf4070itm[:,8]*midstrikestdf4070itm+midstrikemeanf4070itm)
+newdaf70otm = (daf70otm[:,8]*midstrikestdf70otm+midstrikemeanf70otm)
+newdaf70atm = (daf70atm[:,8]*midstrikestdf70atm+midstrikemeanf70atm)
+newdaf70itm = (daf70itm[:,8]*midstrikestdf70itm+midstrikemeanf70itm)
+
+
+#calculate RMSE
+def RMSE(ygrid):
+    for r in xrange(len(dat[:,0])):
+        ypred = (Yapprox[r]*midstrikestd+midstrikemean)
+        Sqerr = np.power((ypred - ygrid),2)
+        MSE = np.sum(Sqerr)
+        rmse = np.sqrt(MSE/ygrid.size)
+        #print ('RMSE = ' +str(rmse))
+        #print ('Log likelihood is ' + str(model.log_likelihood()))
+        return rmse
+
+print('RMSE is:' +str(RMSE(newdat)))
+# =============================================================================
+# 
+# 
+# 
+# 
+# 
+# 
+# =============================================================================
+def RMSE_pred40otm(ygridf40otm):
+    for r in xrange(len(daf40otm[:,0])):
+        ypredf40otm = (Yapproxf40otm[r]*midstrikestd+midstrikemean)
+        Sqerrf40otm = np.power((ypredf40otm - ygridf40otm),2)
+        MSEf40otm = np.sum(Sqerrf40otm)
+        rmsef40otm = np.sqrt(MSEf40otm/ygridf40otm.size)
+        #print ('RMSE = ' +str(rmse))
+        #print ('Log likelihood is ' + str(model.log_likelihood()))
+        return rmsef40otm
+
+def RMSE_pred40atm(ygridf40atm):
+    for r in xrange(len(daf40atm[:,0])):
+        ypredf40atm = (Yapproxf40atm[r]*midstrikestd+midstrikemean)
+        Sqerrf40atm = np.power((ypredf40atm - ygridf40atm),2)
+        MSEf40atm = np.sum(Sqerrf40atm)
+        rmsef40atm = np.sqrt(MSEf40atm/ygridf40atm.size)
+        #print ('RMSE = ' +str(rmse))
+        #print ('Log likelihood is ' + str(model.log_likelihood()))
+        return rmsef40atm
+    
+def RMSE_pred40itm(ygridf40itm):
+    for r in xrange(len(daf40itm[:,0])):
+        ypredf40itm = (Yapproxf40itm[r]*midstrikestd+midstrikemean)
+        Sqerrf40itm = np.power((ypredf40itm - ygridf40itm),2)
+        MSEf40itm = np.sum(Sqerrf40itm)
+        rmsef40itm = np.sqrt(MSEf40itm/ygridf40itm.size)
+        #print ('RMSE = ' +str(rmse))
+        #print ('Log likelihood is ' + str(model.log_likelihood()))
+        return rmsef40itm
+    
+def RMSE_pred4070otm(ygridf4070otm):
+    for r in xrange(len(daf4070otm[:,0])):
+        ypredf4070otm = (Yapproxf4070otm[r]*midstrikestd+midstrikemean)
+        Sqerrf4070otm = np.power((ypredf4070otm - ygridf4070otm),2)
+        MSEf4070otm = np.sum(Sqerrf4070otm)
+        rmsef4070otm = np.sqrt(MSEf4070otm/ygridf4070otm.size)
+        #print ('RMSE = ' +str(rmse))
+        #print ('Log likelihood is ' + str(model.log_likelihood()))
+        return rmsef4070otm
+    
+def RMSE_pred4070atm(ygridf4070atm):
+    for r in xrange(len(daf4070atm[:,0])):
+        ypredf4070atm = (Yapproxf4070atm[r]*midstrikestd+midstrikemean)
+        Sqerrf4070atm = np.power((ypredf4070atm - ygridf4070atm),2)
+        MSEf4070atm = np.sum(Sqerrf4070atm)
+        rmsef4070atm = np.sqrt(MSEf4070atm/ygridf4070atm.size)
+        #print ('RMSE = ' +str(rmse))
+        #print ('Log likelihood is ' + str(model.log_likelihood()))
+        return rmsef4070atm
+    
+    
+def RMSE_pred4070itm(ygridf4070itm):
+    for r in xrange(len(daf4070itm[:,0])):
+        ypredf4070itm = (Yapproxf4070itm[r]*midstrikestd+midstrikemean)
+        Sqerrf4070itm = np.power((ypredf4070itm - ygridf4070itm),2)
+        MSEf4070itm = np.sum(Sqerrf4070itm)
+        rmsef4070itm = np.sqrt(MSEf4070itm/ygridf4070itm.size)
+        #print ('RMSE = ' +str(rmse))
+        #print ('Log likelihood is ' + str(model.log_likelihood()))
+        return rmsef4070itm
+    
+    
+def RMSE_pred70otm(ygridf70otm):
+    for r in xrange(len(daf70otm[:,0])):
+        ypredf70otm = (Yapproxf70otm[r]*midstrikestd+midstrikemean)
+        Sqerrf70otm = np.power((ypredf70otm - ygridf70otm),2)
+        MSEf70otm = np.sum(Sqerrf70otm)
+        rmsef70otm = np.sqrt(MSEf70otm/ygridf70otm.size)
+        #print ('RMSE = ' +str(rmse))
+        #print ('Log likelihood is ' + str(model.log_likelihood()))
+        return rmsef70otm
+def RMSE_pred70atm(ygridf70atm):
+    for r in xrange(len(daf70atm[:,0])):
+        ypredf70atm = (Yapproxf70atm[r]*midstrikestd+midstrikemean)
+        Sqerrf70atm = np.power((ypredf70atm - ygridf70atm),2)
+        MSEf70atm = np.sum(Sqerrf70atm)
+        rmsef70atm = np.sqrt(MSEf70atm/ygridf70atm.size)
+        #print ('RMSE = ' +str(rmse))
+        #print ('Log likelihood is ' + str(model.log_likelihood()))
+        return rmsef70atm
+    
+    
+def RMSE_pred70itm(ygridf70itm):
+    for r in xrange(len(daf70itm[:,0])):
+        ypredf70itm = (Yapproxf70itm[r]*midstrikestd+midstrikemean)
+        Sqerrf70itm = np.power((ypredf70itm - ygridf70itm),2)
+        MSEf70itm = np.sum(Sqerrf70itm)
+        rmsef70itm = np.sqrt(MSEf70itm/ygridf70itm.size)
+        #print ('RMSE = ' +str(rmse))
+        #print ('Log likelihood is ' + str(model.log_likelihood()))
+        return rmsef70itm
+    
+    
+
+
+print('RMSE prediction is for 40otm is:' +str(RMSE_pred40otm(newdaf40otm)))
+print('RMSE prediction is for 40atm is:' +str(RMSE_pred40atm(newdaf40atm)))
+print('RMSE prediction is for 40itm is:' +str(RMSE_pred40itm(newdaf40itm)))
+print('RMSE prediction is for 4070otm is:' +str(RMSE_pred4070otm(newdaf4070otm)))
+print('RMSE prediction is for 4070atm is:' +str(RMSE_pred4070atm(newdaf4070atm)))
+print('RMSE prediction is for 4070itm is:' +str(RMSE_pred4070itm(newdaf4070itm)))
+print('RMSE prediction is for 70otm is:' +str(RMSE_pred70otm(newdaf70otm)))
+print('RMSE prediction is for 70atm is:' +str(RMSE_pred70atm(newdaf70atm)))
+print('RMSE prediction is for 70itm is:' +str(RMSE_pred70itm(newdaf70itm)))
+
+
+print('Time taken for execution to run = ' +str((time.time() - start_time)/60) +' minutes.')
